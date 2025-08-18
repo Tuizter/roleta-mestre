@@ -1,7 +1,6 @@
 # app_roleta.py
 import streamlit as st
 
-# --- A CLASSE 'AnalistaRoleta' COMPLETA FICA AQUI ---
 class AnalistaRoleta:
     # (A classe AnalistaRoleta não muda, é a mesma de antes)
     def __init__(self):
@@ -75,5 +74,90 @@ class AnalistaRoleta:
         contagem = terminais.count(terminal_dominante)
         if contagem >= 4:
             if contagem >= 5:
+                # LINHA 78 CORRIGIDA ABAIXO
+                disfarçados_str = ", ".join(map(str, sorted(list(self.DISFARCADOS[terminal_dominante]))))
+                return {
+                    "analise": f"Manipulação de Terminal {terminal_dominante} (SATURADO - {contagem} repetições).",
+                    "estrategia": f"Antecipar a Quebra. Focar na região dos Disfarçados: {{{disfarçados_str}}}."
+                }
+            else:
+                cavalos = self.CAVALOS_TRIPLOS[terminal_dominante]
+                return {
+                    "analise": f"Manipulação de Terminal {terminal_dominante} forte.",
+                    "estrategia": f"Seguir a tendência. Focar na região do Cavalo Triplo {{{terminal_dominante}, {cavalos[0]}, {cavalos[1]}}}."
+                }
+        return None
 
-               disfarçados_str = ", ".join(map(str, sorted(list(self.DISFARCADOS[terminal_dominante]))))
+    def analisar(self):
+        if len(self.historico) < 3:
+            return {"analise": "Aguardando mais números...", "estrategia": "Nenhuma ação recomendada."}
+        
+        analises_prioritarias = [
+            self._checar_cavalos_diretos,
+            self._checar_continuacao_cavalos,
+            self._checar_manipulacao_terminal,
+        ]
+        for funcao_analise in analises_prioritarias:
+            resultado = funcao_analise()
+            if resultado:
+                return resultado
+        
+        return {"analise": "Nenhum padrão tático claro identificado.", "estrategia": "Aguardar um gatilho."}
+
+# --- INTERFACE DO APLICATIVO (STREAMLIT) ---
+
+st.set_page_config(layout="wide", page_title="Roleta Mestre")
+
+# Título do App
+st.title("Roleta Mestre - Agente Analista")
+
+# Inicializa o analista na memória da sessão
+if 'analista' not in st.session_state:
+    st.session_state.analista = AnalistaRoleta()
+
+# --- TABELA DE ROLETA INTERATIVA (NOVA VERSÃO) ---
+st.header("Clique no número para adicionar ao histórico:")
+
+# Linha do Zero
+col_zero, col_table = st.columns([1, 12])
+with col_zero:
+    if st.button("0", key="num_0", use_container_width=True):
+        st.session_state.analista.adicionar_numero(0)
+        st.rerun()
+
+with col_table:
+    # Linhas da tabela
+    numeros = [[3,6,9,12,15,18,21,24,27,30,33,36],
+               [2,5,8,11,14,17,20,23,26,29,32,35],
+               [1,4,7,10,13,16,19,22,25,28,31,34]]
+    
+    cols = st.columns(12)
+    for i in range(12):
+        for j in range(3):
+            num = numeros[j][i]
+            if cols[i].button(f"{num}", key=f"num_{num}", use_container_width=True):
+                st.session_state.analista.adicionar_numero(num)
+                st.rerun()
+
+st.divider() # Uma linha para separar
+
+# ---- PAINEL DE ANÁLISE ----
+st.header("Análise em Tempo Real")
+
+historico_str = ", ".join(map(str, st.session_state.analista.historico))
+st.write(f"**Tempo de Tela:** `{historico_str or 'Vazio'}`")
+
+resultado_analise = st.session_state.analista.analisar()
+
+col1, col2 = st.columns(2)
+with col1:
+    st.subheader("Diagnóstico:")
+    st.info(resultado_analise['analise'])
+with col2:
+    st.subheader("Estratégia Recomendada:")
+    st.success(resultado_analise['estrategia'])
+
+# ---- Botão de Limpar ----
+if st.button("Limpar Histórico"):
+    st.session_state.analista.historico = []
+    st.rerun()
