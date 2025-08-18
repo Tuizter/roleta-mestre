@@ -75,4 +75,5 @@ class AnalistaRoleta:
         contagem = terminais.count(terminal_dominante)
         if contagem >= 4:
             if contagem >= 5:
-                disfarçados_str = ", ".join(map(str, sorted(list(self.DISFARCADOS[termin
+
+               disfarçados_str = ", ".join(map(str, sorted(list(self.DISFARCADOS[terminal_dominante]))))
