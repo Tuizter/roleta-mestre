@@ -1,9 +1,12 @@
 # app_roleta.py
 import streamlit as st
 
+# A CONFIGURAÇÃO DA PÁGINA DEVE SER A PRIMEIRA COISA NO CÓDIGO
+st.set_page_config(layout="wide", page_title="Roleta Mestre")
+
 # --- A CLASSE 'AnalistaRoleta' COMPLETA FICA AQUI ---
-# (A classe AnalistaRoleta não muda, é a mesma de antes)
 class AnalistaRoleta:
+    # (A classe AnalistaRoleta não muda, é a mesma de antes)
     def __init__(self):
         self.historico = []
         self.CILINDRO_EUROPEU = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26]
@@ -107,15 +110,11 @@ class AnalistaRoleta:
 # --- FUNÇÃO DE LOGIN COM SENHA ---
 def check_password():
     """Retorna True se o usuário tiver digitado a senha correta."""
-
-    # Verifica se o usuário já está logado
     if st.session_state.get("password_correct", False):
         return True
 
-    # Mostra o formulário de senha
     password_input = st.text_input("Digite a senha para acessar:", type="password")
     
-    # ***** MUDE A SUA SENHA AQUI *****
     CORRECT_PASSWORD = "Noah2022****" 
     
     if st.button("Entrar"):
@@ -128,24 +127,16 @@ def check_password():
 
 # --- INTERFACE PRINCIPAL DO APLICATIVO ---
 
-# Roda a função de senha. Se retornar False, o resto do app não é executado.
 if not check_password():
-    st.stop() # Interrompe a execução do app se a senha estiver incorreta
+    st.stop()
 
-# O restante do app só é renderizado se a senha estiver correta
-st.set_page_config(layout="wide", page_title="Roleta Mestre")
-
-# Título do App
 st.title("Roleta Mestre - Agente Analista")
 
-# Inicializa o analista na memória da sessão
 if 'analista' not in st.session_state:
     st.session_state.analista = AnalistaRoleta()
 
-# --- TABELA DE ROLETA INTERATIVA ---
 st.header("Clique no número para adicionar ao histórico:")
 
-# Linha do Zero
 col_zero, col_table = st.columns([1, 12])
 with col_zero:
     if st.button("0", key="num_0", use_container_width=True):
@@ -166,8 +157,6 @@ with col_table:
                 st.rerun()
 
 st.divider()
-
-# ---- PAINEL DE ANÁLISE ----
 st.header("Análise em Tempo Real")
 
 historico_str = ", ".join(map(str, st.session_state.analista.historico))
@@ -183,7 +172,6 @@ with col2:
     st.subheader("Estratégia Recomendada:")
     st.success(resultado_analise['estrategia'])
 
-# ---- Botão de Limpar ----
 if st.button("Limpar Histórico"):
     st.session_state.analista.historico = []
     st.rerun()
