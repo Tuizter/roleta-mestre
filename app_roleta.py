@@ -1,8 +1,9 @@
 # app_roleta.py
 import streamlit as st
 
+# --- A CLASSE 'AnalistaRoleta' COMPLETA FICA AQUI ---
+# (A classe AnalistaRoleta não muda, é a mesma de antes)
 class AnalistaRoleta:
-    # (A classe AnalistaRoleta não muda, é a mesma de antes)
     def __init__(self):
         self.historico = []
         self.CILINDRO_EUROPEU = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26]
@@ -74,7 +75,6 @@ class AnalistaRoleta:
         contagem = terminais.count(terminal_dominante)
         if contagem >= 4:
             if contagem >= 5:
-                # LINHA 78 CORRIGIDA ABAIXO
                 disfarçados_str = ", ".join(map(str, sorted(list(self.DISFARCADOS[terminal_dominante]))))
                 return {
                     "analise": f"Manipulação de Terminal {terminal_dominante} (SATURADO - {contagem} repetições).",
@@ -104,8 +104,35 @@ class AnalistaRoleta:
         
         return {"analise": "Nenhum padrão tático claro identificado.", "estrategia": "Aguardar um gatilho."}
 
-# --- INTERFACE DO APLICATIVO (STREAMLIT) ---
+# --- FUNÇÃO DE LOGIN COM SENHA ---
+def check_password():
+    """Retorna True se o usuário tiver digitado a senha correta."""
 
+    # Verifica se o usuário já está logado
+    if st.session_state.get("password_correct", False):
+        return True
+
+    # Mostra o formulário de senha
+    password_input = st.text_input("Digite a senha para acessar:", type="password")
+    
+    # ***** MUDE A SUA SENHA AQUI *****
+    CORRECT_PASSWORD = "Noah2022****" 
+    
+    if st.button("Entrar"):
+        if password_input == CORRECT_PASSWORD:
+            st.session_state["password_correct"] = True
+            st.rerun()
+        else:
+            st.error("Senha incorreta.")
+    return False
+
+# --- INTERFACE PRINCIPAL DO APLICATIVO ---
+
+# Roda a função de senha. Se retornar False, o resto do app não é executado.
+if not check_password():
+    st.stop() # Interrompe a execução do app se a senha estiver incorreta
+
+# O restante do app só é renderizado se a senha estiver correta
 st.set_page_config(layout="wide", page_title="Roleta Mestre")
 
 # Título do App
@@ -115,7 +142,7 @@ st.title("Roleta Mestre - Agente Analista")
 if 'analista' not in st.session_state:
     st.session_state.analista = AnalistaRoleta()
 
-# --- TABELA DE ROLETA INTERATIVA (NOVA VERSÃO) ---
+# --- TABELA DE ROLETA INTERATIVA ---
 st.header("Clique no número para adicionar ao histórico:")
 
 # Linha do Zero
@@ -126,7 +153,6 @@ with col_zero:
         st.rerun()
 
 with col_table:
-    # Linhas da tabela
     numeros = [[3,6,9,12,15,18,21,24,27,30,33,36],
                [2,5,8,11,14,17,20,23,26,29,32,35],
                [1,4,7,10,13,16,19,22,25,28,31,34]]
@@ -139,7 +165,7 @@ with col_table:
                 st.session_state.analista.adicionar_numero(num)
                 st.rerun()
 
-st.divider() # Uma linha para separar
+st.divider()
 
 # ---- PAINEL DE ANÁLISE ----
 st.header("Análise em Tempo Real")
